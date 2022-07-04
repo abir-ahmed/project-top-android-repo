@@ -11,15 +11,9 @@ A test application which shows the top 50 top most starred github repositories b
 - The repository which loaded once, is saved for offline browsing.
        
 # Tools used
-- Firebase Database
-- Firebase Authentication
-- Google Maps Api
 - Android Studio IDE
-- Android version 4.0 or later
-- Android SDK 17-28
-
-
-Thanks
+- Android version 4.1 and higher
+- Android SDK 16 to 30
 
 
 
