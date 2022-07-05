@@ -17,4 +17,9 @@
     <color name="privacy_policy_dialog_ok_button_border">#0000A0</color>
 
     <color name="colorBackground">#AED6F1</color>
+    <!-- Repository Name, Description, Starr Color -->
+    <color name="repo_name_text_color">#000000</color>
+    <color name="repo_description_text_color">#424242</color>
+    <color name="owner_name_text_color">#616161</color>
+    <color name="repo_stars_text_color">#263238</color>
 </resources>
