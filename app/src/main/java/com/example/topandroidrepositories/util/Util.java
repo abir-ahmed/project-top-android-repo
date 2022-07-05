@@ -1,7 +1,10 @@
 package com.example.topandroidrepositories.util;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 import android.util.Log;
+import android.widget.ImageView;
 
 import com.example.topandroidrepositories.model.Repo;
 
@@ -186,6 +189,34 @@ public final class Util {
 
         // Return the list of {@link Repo}s
         return repos;
+    }
+
+    public static class DownloadImageTask extends GPAsyncTask<String, Void, Bitmap> {
+
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urlDisplay = urls[0];
+            Bitmap mIcon = null;
+
+            try {
+                InputStream in = new java.net.URL(urlDisplay).openStream();
+                mIcon = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+
+            return mIcon;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
     }
 
 }

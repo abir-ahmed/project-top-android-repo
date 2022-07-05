@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.LoaderManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.Loader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -16,7 +17,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.example.topandroidrepositories.adapter.RepoAdapter;
-import com.example.topandroidrepositories.listener.RecyclerViewScrollListener;
 import com.example.topandroidrepositories.loader.RepoLoader;
 import com.example.topandroidrepositories.model.Repo;
 import com.example.topandroidrepositories.util.Util;
@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<List<Repo>> {
-
     /**
      * Tag for the log messages
      */
@@ -38,14 +37,13 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     private RecyclerView mRecyclerView;
     private RepoAdapter mRepoAdapter;
     private ArrayList<Repo> mRepos;
-
-    // Store a member variable for the listener
-    private RecyclerViewScrollListener scrollListener;
     private LoaderManager mLoaderManager;
 
     private int mPage = 1;
     private static String mGithubUrl = "https://api.github.com/search/repositories?q=created:>2017-10-22&sort=stars&order=desc";
     private static final int REPO_LOADER_ID = 1;
+
+    private RepoAdapter.RecyclerViewClickListener listener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         setContentView(R.layout.activity_main);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.repos_recycler_view);
+
         noInternetTextMessage = (TextView) findViewById(R.id.tv_no_internet);
         mLoadingProgress = findViewById(R.id.loading_indicator);
 
@@ -68,35 +67,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void initialize() {
-        mRepos = new ArrayList<>();
-        mRepoAdapter = new RepoAdapter(this, mRepos);
-
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
-        mRecyclerView.setLayoutManager(linearLayoutManager);
-
-        // Adds the scroll listener to RecyclerView
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            // for this tutorial, this is the ONLY method that we need, ignore the rest
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                if (dy > 0) {
-                    if (!recyclerView.canScrollVertically(RecyclerView.FOCUS_DOWN)) {
-                        loadNextDataFromApi();
-                    }
-                }
-
-                if (dy < 0) {
-                    if (!recyclerView.canScrollVertically(-1)) {
-                        loadPreviousDataFromApi();
-                    }
-                }
-
-            }
-        });
-
-        mRecyclerView.setAdapter(mRepoAdapter);
+        setAdapter();
         mLoadingProgress.setVisibility(View.VISIBLE);
 
         ConnectivityManager connMgr = (ConnectivityManager)
@@ -121,6 +92,36 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         }
     }
 
+    private void setAdapter() {
+        try {
+            setOnClickListener();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        mRepos = new ArrayList<>();
+
+        mRepoAdapter = new RepoAdapter(this, mRepos, listener);
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+
+        mRecyclerView.setAdapter(mRepoAdapter);
+    }
+
+    private void setOnClickListener() {
+        listener = new RepoAdapter.RecyclerViewClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                Intent intent = new Intent(getApplicationContext(), RepoDetailActivity.class);
+                intent.putExtra("repoName", mRepos.get(position).getRepoName());
+                intent.putExtra("repoDescription", mRepos.get(position).getRepoDescription());
+                intent.putExtra("repoOwnerName", mRepos.get(position).getRepoOwnerName());
+                intent.putExtra("ownerAvatarUrl", mRepos.get(position).getOwnerAvatarUrl());
+                startActivity(intent);
+            }
+        };
+    }
+
     @Override
     public Loader<List<Repo>> onCreateLoader(int i, Bundle bundle) {
         Uri baseUri = Uri.parse(mGithubUrl);
@@ -141,6 +142,7 @@ public class MainActivity extends AppCompatActivity implements LoaderManager.Loa
         // data set. This will trigger the ListView to update.
         if (repos != null && !repos.isEmpty()) {
             mRepoAdapter.addAll(repos);
+
         }
     }
 
